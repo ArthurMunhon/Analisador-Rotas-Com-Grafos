@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include "graph.cpp"
+#include <unordered_map>
 
 using namespace std;
 
@@ -10,6 +11,7 @@ int main(int argc, char *argv[]){
     ifstream arquivo_entrada;
     string entrada;
     graph::digraph g;
+    unordered_map<string, graph::digraph> map;
     for (int i = 1; i < argc; ++i) {
         entrada += argv[i];
     }
@@ -22,9 +24,9 @@ int main(int argc, char *argv[]){
    }
 
    string linha;
-   string lixo;
    while (getline(arquivo_entrada, linha))
    {
+
         stringstream ss(linha);
         if(getline(ss, prb_id, ',') 
            && getline(ss, probe_src, ',') 
@@ -34,12 +36,20 @@ int main(int argc, char *argv[]){
            && getline(ss, hop_to, ',') 
            && getline(ss, rtt, ',')){
             
-            g.insert_nodo(hop, prb_id, probe_src, dst_addr, rtt);
-
+             
+            if(hop_to != "*"){
+                if(hop_from != " " || hop_to != " "){
+                    g.insert_nodo(hop, probe_src, dst_addr, hop_from, rtt);
+                    g.insert_link(hop_from, hop_to);
+                }
+            }
         }
    }
    
     cout << g.size() << " nodos" << endl;
+    g.draw();
+    cout << g.degree("192.168.3.1") << " arestas" << endl;
+    cout << g.find("192.168.3.1");
     arquivo_entrada.close();
     return 0;
 }

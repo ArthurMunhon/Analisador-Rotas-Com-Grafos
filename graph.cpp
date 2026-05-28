@@ -17,7 +17,8 @@ namespace graph{
             std::string probe_src;
             std::string dst_addr;
             std::string rtt;
-            std::vector<node*> links; //lista de ponteiros p/ os nodos vizinhos - ARESTAS
+            std::string hop_from;
+            std::vector<node*> hop_to; //lista de ponteiros p/ os nodos vizinhos - ARESTAS
           };
 
           //tabela hash, que mapeia o rótulo do nó para o objeto node
@@ -28,16 +29,15 @@ namespace graph{
         public:
          //Insere um novo nó no grafo com o rótulo s
           void insert_nodo(const std::string& hop, 
-                            const std::string& prb_id, 
                             const std::string& probe_src, 
-                            const std::string& dst_addr, 
+                            const std::string& dst_addr,
+                            const std::string& hop_from,
                             const std::string& rtt){
             node aux;
-            aux.prb_id = prb_id;
             aux.probe_src = probe_src;
             aux.dst_addr = dst_addr;
             aux.rtt = rtt; 
-            nodes[hop] = aux;
+            nodes[hop_from] = aux;
           }
 
           
@@ -47,7 +47,7 @@ namespace graph{
             return nodes.size();
           }
             
-          /*
+          
           //busca um nó pelo seu rótulo e retorna o endereço do nodo 
           node* find(const std::string& s){
             auto it = nodes.find(s);//este find é do unordere_map
@@ -61,7 +61,7 @@ namespace graph{
             auto pto = find(hop_to);
             if(pto == nullptr) return false; // nó de destino ñ existe
 
-            pfrom->links.push_back(pto); //Adiciona a aresta na lista de adjacencia
+            pfrom->hop_to.push_back(pto); //Adiciona a aresta na lista de adjacencia
             return true;
           }
 
@@ -69,7 +69,7 @@ namespace graph{
           size_t outdegree(const std::string& s){
             for(auto node : nodes){
               if(node.first == s){
-                return node.second.links.size();
+                return node.second.hop_to.size();
               }
             }
             return 0;
@@ -83,8 +83,8 @@ namespace graph{
             }
             size_t qnt = 0;
             for(auto vertice : nodes){
-                for(auto link : vertice.second.links)
-                  if(link->value == s){
+                for(auto link : vertice.second.hop_to)
+                  if(link->hop_from == s){
                     qnt++;
                   }
             }
@@ -104,27 +104,28 @@ namespace graph{
             std::ofstream dot(filename); // cria o arquivo
             dot << "digraph {\n";
             
-            for(auto nd : nodes){ //  percorre todos os nodos
-              dot << "\t" << nd.first; //escreve o rotulo do nodo (chave) 
-              if(nd.second.links.size() > 0){
-                dot << " -> {";
-                for(auto vizinho : nd.second.links){
-                  dot << vizinho->value << " ";
-                }
-                dot << "}"; //fecha chave da lista dos vizinhos
-              }
-              dot << ";\n"; 
-            }
+            for(auto nd : nodes){
+                  dot << "\t\"" << nd.first << "\"";
+                      if(nd.second.hop_to.size() > 0){
+                          dot << " -> { ";
+                          for(auto vizinho : nd.second.hop_to){
+                              dot << "\"" << vizinho->hop_from << "\" ";
+                          }
+                          dot << "}";
+                      }
+                      dot << ";\n";
+                  }
             dot << "}\n";//fecha chaves do digraph
             
           }
           
           void draw(){
             export2dot("graphED2.dot");
-            std::system("dot -Tx11 graphED2.dot");
-
+            std::system("dot -Tpng graphED2.dot -o grafo.png");
+            //std::system("dot -Tx11 graphED2.dot"); LINUX
           }
-
+        
+          /*
           void remove_link(const std::string &from, const std::string &to){
             auto pfrom = find(from);
             if(!pfrom) return;
