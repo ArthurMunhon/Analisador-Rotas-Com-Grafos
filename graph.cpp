@@ -10,15 +10,15 @@
 namespace graph{
 
     class digraph{
-        private:
+        public:
           // nodos do grafo - VERTÍCES
           struct node{
-            std::string prb_id;
+            //std::string prb_id;
             std::string probe_src;
             std::string dst_addr;
             std::string rtt;
             std::string hop_from;
-            std::vector<node*> hop_to; //lista de ponteiros p/ os nodos vizinhos - ARESTAS
+            std::vector<std::string> hop_to; //lista de ponteiros p/ os nodos vizinhos - ARESTAS
           };
 
           //tabela hash, que mapeia o rótulo do nó para o objeto node
@@ -28,7 +28,7 @@ namespace graph{
         
         public:
          //Insere um novo nó no grafo com o rótulo s
-          void insert_nodo(const std::string& hop, 
+          void insert_nodo(//const std::string& hop, 
                             const std::string& probe_src, 
                             const std::string& dst_addr,
                             const std::string& hop_from,
@@ -109,7 +109,7 @@ namespace graph{
                       if(nd.second.hop_to.size() > 0){
                           dot << " -> { ";
                           for(auto vizinho : nd.second.hop_to){
-                              dot << "\"" << vizinho->hop_from << "\" ";
+                              dot << "\"" << vizinho->hop_to << "\" ";
                           }
                           dot << "}";
                       }

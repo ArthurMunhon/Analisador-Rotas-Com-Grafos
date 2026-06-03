@@ -39,8 +39,7 @@ int main(int argc, char *argv[]){
              
             if(hop_to != "*"){
                 if(hop_from != " " || hop_to != " "){
-                    g.insert_nodo(hop, probe_src, dst_addr, hop_from, rtt);
-                    g.insert_link(hop_from, hop_to);
+                    map[prb_id].nodes[hop] = {probe_src, dst_addr, rtt, hop_from, {hop_to}};
                 }
             }
         }
