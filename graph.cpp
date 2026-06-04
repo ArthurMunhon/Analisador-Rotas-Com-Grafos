@@ -18,7 +18,7 @@ namespace graph{
             std::string dst_addr;
             std::string rtt;
             std::string hop_from;
-            std::vector<std::string> hop_to; //lista de ponteiros p/ os nodos vizinhos - ARESTAS
+            std::vector<std::string> links; //lista de ponteiros p/ os nodos vizinhos - ARESTAS
           };
 
           //tabela hash, que mapeia o rótulo do nó para o objeto node
@@ -54,6 +54,7 @@ namespace graph{
             return it==nodes.end() ?  nullptr : &it->second;
           }
 
+          /*
           //INsere um aresta dirigida de 'from' para 'to'
           bool insert_link(const std::string& hop_from, const std::string& hop_to){
             auto pfrom = find(hop_from);
@@ -64,7 +65,7 @@ namespace graph{
             pfrom->hop_to.push_back(pto); //Adiciona a aresta na lista de adjacencia
             return true;
           }
-
+          
           //numero de arestas que saem de um vertice
           size_t outdegree(const std::string& s){
             for(auto node : nodes){
@@ -84,13 +85,13 @@ namespace graph{
             size_t qnt = 0;
             for(auto vertice : nodes){
                 for(auto link : vertice.second.hop_to)
-                  if(link->hop_from == s){
+                  if(link == s){
                     qnt++;
                   }
             }
             return qnt;
           }
-
+          
           //numero de arestas conectadas a um vertice
           size_t degree(const std::string& s){
             auto p = find(s);
@@ -99,7 +100,8 @@ namespace graph{
             }
             return indegree(s) + outdegree(s);
           }
-
+          
+          /*
           void export2dot(const std::string& filename){
             std::ofstream dot(filename); // cria o arquivo
             dot << "digraph {\n";
@@ -109,7 +111,7 @@ namespace graph{
                       if(nd.second.hop_to.size() > 0){
                           dot << " -> { ";
                           for(auto vizinho : nd.second.hop_to){
-                              dot << "\"" << vizinho->hop_to << "\" ";
+                              dot << "\"" << vizinho->hop_to << "\"";
                           }
                           dot << "}";
                       }
@@ -125,7 +127,7 @@ namespace graph{
             //std::system("dot -Tx11 graphED2.dot"); LINUX
           }
         
-          /*
+          
           void remove_link(const std::string &from, const std::string &to){
             auto pfrom = find(from);
             if(!pfrom) return;

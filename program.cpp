@@ -39,15 +39,30 @@ int main(int argc, char *argv[]){
              
             if(hop_to != "*"){
                 if(hop_from != " " || hop_to != " "){
-                    map[prb_id].nodes[hop] = {probe_src, dst_addr, rtt, hop_from, {hop_to}};
+                    map[prb_id].nodes[hop] = {probe_src, dst_addr, rtt, hop_from};
+                    map[prb_id].nodes[hop].links.push_back();
                 }
             }
         }
    }
    
+
+   for (auto& [prb_id, digrafo] : map) {
+    std::cout << "prb_id: " << prb_id << "\n";
+        for (const auto& [hop, node] : digrafo.nodes) {
+            std::cout << "  hop: " << hop << "\n";
+            std::cout << "    probe_src: " << node.probe_src << "\n";
+            std::cout << "    dst_addr: "  << node.dst_addr  << "\n";
+            std::cout << "    rtt: "       << node.rtt       << "\n";
+            std::cout << "    hop_from: "  << node.hop_from  << "\n";
+            std::cout << "    hop_to:";
+            for (auto& destino : node.links) {
+                std::cout << " " << destino;
+            }
+            std::cout << "\n";
+        }
+    }
     cout << g.size() << " nodos" << endl;
-    g.draw();
-    cout << g.degree("192.168.3.1") << " arestas" << endl;
     cout << g.find("192.168.3.1");
     arquivo_entrada.close();
     return 0;
