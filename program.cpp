@@ -44,22 +44,17 @@ int main(int argc, char *argv[]){
              
             if(hop_to != "*"){
                 if(hop_from != " " || hop_to != " "){
-                    g.insert_nodo(prb_id, hop, probe_src, dst_addr, hop_from, rtt);
+                    g.insert_nodo(prb_id, hop,probe_src, dst_addr, hop_from, rtt);
                     vertices++;
+            
+                    g.insert_link(hop_from, hop_to);
+                    arestas++;
                     
-                    bool existeArestaIgual = g.existe_aresta(hop_from, hop_to);
-                    if(existeArestaIgual == false){
-                        g.insert_link(hop_from, hop_to);
-                        arestas++;
-                    }
                 
                 }
             }
         }
-   }
-   
-
-   
+   }  
     cout << "Carregamento inicial concluído! Foram inseridos " << vertices << " vertices e " << arestas << " arestas" << endl;
     arquivo_entrada.close();
     cout << "======MENU======" << endl <<
@@ -83,13 +78,16 @@ int main(int argc, char *argv[]){
         cin >> escolha;
         ofstream dot("graphED2.dot"); // cria o arquivo        
         if(escolha == 1){
-            g.exibe_grafo();
+            g.draWhithScreen(argv[1]);
         }
         else if(escolha == 2){
             g.drawPNG(argv[1]);
         }
         else if(escolha == 3){
             g.drawPDF(argv[1]);
+        }
+        else if(escolha == 4){
+            g.exibe_grafo();
         }
         
         

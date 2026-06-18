@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <unordered_set>
 #include <queue>
+#include <filesystem>
 
 namespace graph{
 
@@ -40,7 +41,9 @@ namespace graph{
                             const std::string& dst_addr,
                             const std::string& hop_from,
                             const std::string& rtt){
-            map[prb_id].nodes[hop] = {probe_src, dst_addr, rtt, hop_from};
+            if(map[prb_id].nodes.count(hop) == 0){
+                map[prb_id].nodes[hop] = {probe_src, dst_addr, rtt, hop_from};
+            }
           }
 
           void exibe_grafo(){
@@ -68,7 +71,7 @@ namespace graph{
             
           
           //busca um nó pelo seu rótulo e retorna o endereço do nodo 
-          node* find(const std::string& s){
+          node* find_node(const std::string& s){
             for(auto& [prb_id, digrafo] : map){
                 for(auto& [hop, node] : digrafo.nodes){
                     if(node.hop_from == s){
@@ -84,25 +87,31 @@ namespace graph{
           //INsere um aresta dirigida de 'from' para 'to'
           bool insert_link(const std::string& hop_from, const std::string& hop_to){
             for(auto& [prb_id, digrafo] : map){
-                for(auto& [hop, node] : digrafo.nodes){
-                    if(node.hop_from == hop_from){
-                        node.links.push_back(hop_to);
-                        return true;
+                if(digrafo.nodes.count(hop_from) == 0){
+                    for(auto& [hop, node] : digrafo.nodes){
+                        if(node.hop_from == hop_from){
+                            // Verifica duplicata antes de inserir
+                            auto it = find(node.links.begin(), node.links.end(), hop_to);
+                            if(it == node.links.end()){  // ou usa existe_aresta
+                                node.links.push_back(hop_to);
+                            }
+                            return true;
+                        }
                     }
                 }
-             }
-             return false;
+            }
+            return false;
           }
           
           //existe uma aresta de?
           bool existe_aresta(const std::string& vertice, const std::string& novoLink){
-            auto p = find(vertice);
+            auto p = find_node(vertice);
             for (auto& link : p->links){
                 if(link == novoLink){
                     return true;
                 }
             }
-             return false;
+            return false;
           }
           /*
           //numero de arestas que saem de um vertice
@@ -159,18 +168,15 @@ namespace graph{
                         }
                     }
                     dot << "}\n";
+            dot.close();
             };
           
           
           void draWhithScreen(const std::string& input){
             export2dot("graphED2.dot");
-            std::string command = "dot -Tx11 graphED2.dot -o " + input + ".png";
-
-            std::system(command.c_str());
+            std::system("dot -Tx11 graphED2.dot");
           }
 
-          //funciona apenas para windows nesse momento pq o comando exibe imagem no windows
-          //ESTUDAR COMO EXIBIR IMAGEM NO LINUX
           void drawPNG(const std::string& input){
             export2dot("graphED2.dot");
             std::string command = "dot -Tpng graphED2.dot -o " + input + ".png";
@@ -228,11 +234,11 @@ namespace graph{
                                                 const std::string &to)
         {
           std::vector<std::string> path;
-          auto pfrom = find(from);
+          auto pfrom = find_node(from);
           if (!pfrom)
             return path;
 
-          auto pto = find(to);
+          auto pto = find_node(to);
           if (!pto)
             return path;
 
@@ -261,7 +267,7 @@ namespace graph{
                 for(auto [hop, node] : digrafo.nodes){
                     if(node.hop_from == current->hop_from){
                         for(auto &n : node.links){
-                            auto p = find(n);
+                            auto p = find_node(n);
                             if (source.count(p) == 0)
                             {
                                 q.push(p);
