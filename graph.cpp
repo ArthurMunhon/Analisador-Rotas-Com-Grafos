@@ -189,6 +189,52 @@ namespace graph{
             std::system(command.c_str());
           }
 
+          void drawMenor_caminhoPNG(std::vector<std::string> path, std::string input){
+            export2dot_pintado("graphED2.dot", path);
+            std::string command = "dot -Tpng graphED2.dot -o " + input + ".png";
+            std::system(command.c_str());
+          }
+
+          void drawMenor_caminhoPDF(std::vector<std::string> path, std::string input){
+            export2dot("graphED2.dot");
+            std::string command = "dot -Tpdf graphED2.dot -o " + input + ".pdf";
+            std::system(command.c_str());
+          }
+
+          void drawMenor_caminhoScreen(std::vector<std::string> path, std::string input){
+            export2dot("graphED2.dot");
+            std::system("dot -Tx11 graphED2.dot");
+          }
+
+          void export2dot_pintado(const std::string& filename, std::vector<std::string> path){
+            std::ofstream dot(filename); // cria o arquivo
+            dot << "digraph {\n";
+              for(auto s : path){
+                for(auto&[prb_id, digrafo] : map){
+                  for(auto& [hop, node] : digrafo.nodes){
+                    if(node.hop_from == s){
+                      dot << "\t\"" << node.hop_from << "\" [style=filled, fillcolor=\"lightblue\"];\n";
+                    }
+                  }
+                }
+              }
+
+              
+                    for (auto& [prb_id, digrafo] : map) {
+                        for (auto& [hop, node] : digrafo.nodes) {
+                            if (node.links.empty())
+                                continue;
+                            dot << "\"" << node.hop_from << "\" -> {";
+                            for (auto& link : node.links) {
+                                dot << "\"" << link << "\" ";
+                            }
+                            dot << "};\n";
+                        }
+                    }
+                    dot << "}\n";
+            dot.close();
+            };
+
         /*
           
           void remove_link(const std::string &from, const std::string &to){
@@ -230,6 +276,7 @@ namespace graph{
             recursive_DFS(p);
           }
         */
+          
         std::vector<std::string> shortest_path(const std::string &from,
                                                 const std::string &to)
         {
@@ -247,9 +294,8 @@ namespace graph{
             path.push_back(from);
             return path;
           }
-
-          std::unordered_map<node *, node *> source;
-          std::queue<node *> q;
+          std::unordered_map<node*, node*> source;
+          std::queue<node*> q;
           q.push(pfrom);
           source[pfrom] = nullptr;
           bool found = false;
@@ -263,21 +309,13 @@ namespace graph{
               found = true;
               break;
             }
-            for(auto [prb_id, digrafo] : map){
-                for(auto [hop, node] : digrafo.nodes){
-                    if(node.hop_from == current->hop_from){
-                        for(auto &n : node.links){
-                            auto p = find_node(n);
-                            if (source.count(p) == 0)
-                            {
-                                q.push(p);
-                                source[p] = current;
-                            }
-                        }
-                    }
+            for (auto& vizinho_id : current->links) {
+              auto p = find_node(vizinho_id);
+              if (p != nullptr && source.count(p) == 0) {
+                  q.push(p);
+                  source[p] = current;
                 }
-              }
-              
+            }
           }
           if (found)
           {
@@ -291,5 +329,40 @@ namespace graph{
           }
           return path;
         }
+
+
+        int diametro() {
+              int max_diametro = 0;
+
+              for (auto& [prb_id, digrafo] : map) {
+                  for (auto& [hop, n] : digrafo.nodes) {
+                      std::unordered_map<node*, int> distancias;
+                      std::queue<node*> fila;
+                      node* start = &n;
+                      
+                      fila.push(start);
+                      distancias[start] = 0;
+
+                      while (!fila.empty()) {
+                          node* current = fila.front();
+                          fila.pop();
+                          int dist_atual = distancias[current];
+                          
+                          if (dist_atual > max_diametro) {
+                              max_diametro = dist_atual;
+                          }
+
+                          for (const std::string& vizinho_id : current->links) {
+                              node* vizinho = find_node(vizinho_id);
+                              if (vizinho && distancias.find(vizinho) == distancias.end()) {
+                                  distancias[vizinho] = dist_atual + 1;
+                                  fila.push(vizinho);
+                              }
+                          }
+                      }
+                  }
+              }
+              return max_diametro;
+          }
     }; /// fim da classe digraph
-} //fim do namespace
+} //fim do namespace 

@@ -86,9 +86,6 @@ int main(int argc, char *argv[]){
         else if(escolha == 3){
             g.drawPDF(argv[1]);
         }
-        else if(escolha == 4){
-            g.exibe_grafo();
-        }
         
         
     }else if (usuario == 2){
@@ -99,14 +96,30 @@ int main(int argc, char *argv[]){
         string ipDestino;
         cin >> ipDestino;
         auto path = g.shortest_path(ipOrigem, ipDestino);
+        cout << "Caminho encotrado (" << path.size() - 1 << "):";
+        for(auto n : path){
+            cout << n << " -> "; 
+        }
+        cout << endl;
+        cout << "Digite qual como quer vizualizar o grafo: " << endl <<
+        "1: Tela" << endl <<
+        "2: Imagem (PNG)" << endl <<
+        "3: Documento (PDF)" << endl;
+        int imagem;
+        cin >> imagem;
+        if(imagem == 1){
+            g.drawMenor_caminhoScreen(path,argv[1]);
+        }else if(imagem == 2){
+            g.drawMenor_caminhoPNG(path,argv[1]);
+        }else if(imagem == 3){
+            g.drawMenor_caminhoPDF(path,argv[1]);
+        }
     }
     else if(usuario == 3){
-        cout << "Encontrando o menor caminho..." << endl;
-        // Implementar a lógica para encontrar o menor caminho entre dois nós
+        cout << g.diametro() << endl;
     }
     else if(usuario == 4){
-        cout << "Calculando o diâmetro do grafo..." << endl;
-        // Implementar a lógica para calcular o diâmetro do grafo
+        
     }
     else if(usuario == 5){
         cout << "Saindo do programa..." << endl;
