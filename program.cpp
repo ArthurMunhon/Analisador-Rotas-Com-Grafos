@@ -39,15 +39,15 @@ int main(int argc, char *argv[]){
            && getline(ss, hop, ',') 
            && getline(ss, hop_from, ',') 
            && getline(ss, hop_to, ',') 
-           && getline(ss, rtt, ',')){
+           && getline(ss, rtt)){
             
              
             if(hop_to != "*"){
                 if(hop_from != " " || hop_to != " "){
-                    g.insert_nodo(prb_id, hop,probe_src, dst_addr, hop_from, rtt);
+                    g.insert_nodo(prb_id,probe_src, dst_addr, hop_from, rtt);
                     vertices++;
             
-                    g.insert_link(hop_from, hop_to);
+                    g.insert_link(prb_id, hop_from, hop_to);
                     arestas++;
                     
                 
@@ -86,6 +86,9 @@ int main(int argc, char *argv[]){
         else if(escolha == 3){
             g.drawPDF(argv[1]);
         }
+        else if(escolha ==4){
+            g.exibe_grafo();
+        }
         
         
     }else if (usuario == 2){
@@ -119,7 +122,9 @@ int main(int argc, char *argv[]){
         cout << g.diametro() << endl;
     }
     else if(usuario == 4){
-        
+        string ip;
+        cin >> ip;
+        cout << g.indegree(ip);
     }
     else if(usuario == 5){
         cout << "Saindo do programa..." << endl;
