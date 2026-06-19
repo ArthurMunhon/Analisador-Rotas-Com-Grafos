@@ -44,10 +44,10 @@ int main(int argc, char *argv[]){
              
             if(hop_to != "*"){
                 if(hop_from != " " || hop_to != " "){
-                    g.insert_nodo(prb_id,probe_src, dst_addr, hop_from, rtt);
+                    g.insert_nodo(prb_id, hop,probe_src, dst_addr, hop_from, rtt);
                     vertices++;
             
-                    g.insert_link(prb_id, hop_from, hop_to);
+                    g.insert_link(hop_from, hop_to);
                     arestas++;
                     
                 

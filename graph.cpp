@@ -36,13 +36,15 @@ namespace graph{
         public:
          //Insere um novo nó no grafo com o rótulo s
           void insert_nodo(const std::string& prb_id,
-                            //const std::string& hop, 
+                            const std::string& hop, 
                             const std::string& probe_src, 
                             const std::string& dst_addr,
                             const std::string& hop_from,
                             const std::string& rtt){
-            if(map[prb_id].nodes.count(hop_from) == 0){
-                map[prb_id].nodes[hop_from] = {probe_src, dst_addr, rtt, hop_from};
+            if(hop_from != "hop_from"){
+              if(map[prb_id].nodes.count(hop) == 0){
+                  map[prb_id].nodes[hop] = {probe_src, dst_addr, rtt, hop_from};
+              }
             }
           }
 
@@ -85,16 +87,22 @@ namespace graph{
 
           
           //INsere um aresta dirigida de 'from' para 'to'
-          bool insert_link(const std::string& prb_id, const std::string& hop_from, const std::string& hop_to){
-              if(map[prb_id].nodes.count(hop_from) > 0){
-                  auto& node = map[prb_id].nodes[hop_from];
-                  auto it = find(node.links.begin(), node.links.end(), hop_to);
-                  if(it == node.links.end()){
-                      node.links.push_back(hop_to);
-                  }
-                  return true;
-              }
-              return false;
+          bool insert_link(const std::string& hop_from, const std::string& hop_to){
+            for(auto& [prb_id, digrafo] : map){
+                if(digrafo.nodes.count(hop_from) == 0){
+                    for(auto& [hop, node] : digrafo.nodes){
+                        if(node.hop_from == hop_from){
+                            // Verifica duplicata antes de inserir
+                            auto it = find(node.links.begin(), node.links.end(), hop_to);
+                            if(it == node.links.end()){  // ou usa existe_aresta
+                                node.links.push_back(hop_to);
+                            }
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
           }
           
           //existe uma aresta de?
@@ -107,17 +115,7 @@ namespace graph{
             }
             return false;
           }
-          /*
-          //numero de arestas que saem de um vertice
-          size_t outdegree(const std::string& s){
-            for(auto node : nodes){
-              if(node.first == s){
-                return node.second.links.size();
-              }
-            }
-            return 0;
-          }
-          */
+          
           //numero de arestas que chegam a um vertice
           size_t indegree(const std::string& s){
             auto p = find_node(s);
@@ -159,20 +157,7 @@ namespace graph{
             });
             return v.empty() ? 0 : v.front().arestas_entradas;
           }
-          /*
-          //numero de arestas conectadas a um vertice
-          size_t degree(const std::string& s){
-            auto p = find(s);
-            if(p == nullptr){
-              return 0;
-            }
-            return indegree(s) + outdegree(s);
-          }
           
-          */
-         
-
-
           void export2dot(const std::string& filename){
               std::ofstream dot(filename);
               dot << "digraph {\n";
@@ -219,13 +204,13 @@ namespace graph{
           }
 
           void drawMenor_caminhoPDF(std::vector<std::string> path, std::string input){
-            export2dot("graphED2.dot");
+            export2dot_pintado("graphED2.dot", path);
             std::string command = "dot -Tpdf graphED2.dot -o " + input + ".pdf";
             std::system(command.c_str());
           }
 
           void drawMenor_caminhoScreen(std::vector<std::string> path, std::string input){
-            export2dot("graphED2.dot");
+            export2dot_pintado("graphED2.dot", path);
             std::system("dot -Tx11 graphED2.dot");
           }
 
@@ -241,65 +226,22 @@ namespace graph{
                   }
                 }
               }
-
+              std::unordered_set<std::string> arestas_escritas;
               
-                    for (auto& [prb_id, digrafo] : map) {
-                        for (auto& [hop, node] : digrafo.nodes) {
-                            if (node.links.empty())
-                                continue;
-                            dot << "\"" << node.hop_from << "\" -> {";
-                            for (auto& link : node.links) {
-                                dot << "\"" << link << "\" ";
-                            }
-                            dot << "};\n";
-                        }
-                    }
-                    dot << "}\n";
-            dot.close();
-            };
-
-        /*
-          
-          void remove_link(const std::string &from, const std::string &to){
-            auto pfrom = find(from);
-            if(!pfrom) return;
-            auto pto = find(to);
-            if(!pto) return;   
-            
-            auto it = std::find(pfrom->links.begin(), pfrom->links.end(), pto);
-            if(it == pfrom->links.end()) return;
-            pfrom->links.erase(it);
-          }
-
-          void remove_nodo(const std::string &key){
-            //encontrar se aquele nodo é vizinho de algum outro nodo e remover
-            auto p = find(key);
-            if(!p) return;
-            for(auto &[k,nd] : nodes){
-              auto it = std::find(nd.links.begin(), nd.links.end(), p);
-              if(it != nd.links.end()) nd.links.erase(it);
+                for (auto& [prb_id, digrafo] : map) {
+                  for (auto& [hop, node] : digrafo.nodes) {
+                      for (auto& link : node.links) {
+                          std::string aresta = node.hop_from + "->" + link;
+                          if(arestas_escritas.count(aresta) == 0){
+                              dot << "\"" << node.hop_from << "\" -> \"" << link << "\";\n";
+                              arestas_escritas.insert(aresta);
+                          }
+                      }
+                  }
+              }
+              dot << "}\n";
             }
-            nodes.erase(key);
-          }
 
-          void recursive_DFS(node* p, int level = 0){
-            if(visited.count(p) > 0)//ja foi visitado
-            return;
-            std::cout << std::string(level, '\t') << p->value << std::endl;
-            visited.insert(p);
-            for(auto ln : p->links){
-              recursive_DFS(ln, level+1);
-            }
-          } 
-
-          void DFS_from(const std::string &s){
-            auto p = find(s);
-            if(!p) return;
-            visited.clear();
-            recursive_DFS(p);
-          }
-        */
-          
         std::vector<std::string> shortest_path(const std::string &from,
                                                 const std::string &to)
         {
