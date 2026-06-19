@@ -76,7 +76,6 @@ int main(int argc, char *argv[]){
         "3: Documento (PDF)" << endl;
         int escolha;
         cin >> escolha;
-        ofstream dot("graphED2.dot"); // cria o arquivo        
         if(escolha == 1){
             g.draWhithScreen(argv[1]);
         }
@@ -122,9 +121,7 @@ int main(int argc, char *argv[]){
         cout << g.diametro() << endl;
     }
     else if(usuario == 4){
-        string ip;
-        cin >> ip;
-        cout << g.indegree(ip);
+        g.top_criticos();
     }
     else if(usuario == 5){
         cout << "Saindo do programa..." << endl;

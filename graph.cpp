@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <unordered_set>
 #include <queue>
-#include <filesystem>
 
 namespace graph{
 
@@ -31,8 +30,7 @@ namespace graph{
           //tabela hash, que mapeia o rótulo do nó para o objeto node
                              //<chave>, <valor>    
           std::unordered_map<std::string,node> nodes;
-          std::unordered_set<node*> visited;
-        
+
         public:
          //Insere um novo nó no grafo com o rótulo s
           void insert_nodo(const std::string& prb_id,
@@ -42,8 +40,8 @@ namespace graph{
                             const std::string& hop_from,
                             const std::string& rtt){
             if(hop_from != "hop_from"){
-              if(map[prb_id].nodes.count(hop) == 0){
-                  map[prb_id].nodes[hop] = {probe_src, dst_addr, rtt, hop_from};
+              if(find_node(hop_from) == nullptr){
+                  map[prb_id].nodes[hop_from] = {probe_src, dst_addr, rtt, hop_from};
               }
             }
           }
@@ -52,7 +50,6 @@ namespace graph{
             for (auto& [prb_id, digrafo] : map) {
             std::cout << "prb_id: " << prb_id << "\n";
                 for (const auto& [hop, node] : digrafo.nodes) {
-                    std::cout << "    hop: " << hop << "\n";
                     std::cout << "    hop_from: " << node.hop_from << "\n";
                     std::cout << "    probe_src: " << node.probe_src << "\n";
                     std::cout << "    dst_addr: "  << node.dst_addr  << "\n";
@@ -66,13 +63,7 @@ namespace graph{
             }
           }
 
-          //retorna a quantidade de nós (vertices) do grafo
-          size_t size(){
-            return nodes.size();
-          }
-            
-          
-          //busca um nó pelo seu rótulo e retorna o endereço do nodo 
+          //busca um nó pelo seu rótulo e retorna o endereço do nodo
           node* find_node(const std::string& s){
             for(auto& [prb_id, digrafo] : map){
                 for(auto& [hop, node] : digrafo.nodes){
@@ -88,32 +79,16 @@ namespace graph{
           
           //INsere um aresta dirigida de 'from' para 'to'
           bool insert_link(const std::string& hop_from, const std::string& hop_to){
-            for(auto& [prb_id, digrafo] : map){
-                if(digrafo.nodes.count(hop_from) == 0){
-                    for(auto& [hop, node] : digrafo.nodes){
-                        if(node.hop_from == hop_from){
-                            // Verifica duplicata antes de inserir
-                            auto it = find(node.links.begin(), node.links.end(), hop_to);
-                            if(it == node.links.end()){  // ou usa existe_aresta
-                                node.links.push_back(hop_to);
-                            }
-                            return true;
-                        }
-                    }
-                }
+            auto p = find_node(hop_from);
+            if(p == nullptr){
+              return false;
             }
-            return false;
-          }
-          
-          //existe uma aresta de?
-          bool existe_aresta(const std::string& vertice, const std::string& novoLink){
-            auto p = find_node(vertice);
-            for (auto& link : p->links){
-                if(link == novoLink){
-                    return true;
-                }
+            // Verifica duplicata antes de inserir
+            auto it = find(p->links.begin(), p->links.end(), hop_to);
+            if(it == p->links.end()){
+                p->links.push_back(hop_to);
             }
-            return false;
+            return true;
           }
           
           //numero de arestas que chegam a um vertice
@@ -124,7 +99,7 @@ namespace graph{
               return 0;
             }
             for(auto& [prb_id, digrafo] : map){
-              for(auto&[hop, node] : digrafo.nodes){
+              for(auto& [hop, node] : digrafo.nodes){
                 for(auto& link : node.links){
                   if(s == link){
                     qnt++;
@@ -135,27 +110,28 @@ namespace graph{
             return qnt;
           }
 
-          int top_criticos(){
+          void top_criticos(){
             struct nos
             {
-              node no;
+              std::string ip;
               int arestas_entradas;
             };
-            
+
             std::vector<nos> v;
             for(auto& [prb_id, digrafo] : map){
               for(auto& [hop, nodo] : digrafo.nodes){
-                  int arestas_entrada = indegree(nodo.hop_from);
-                  nos no;
-                  no.arestas_entradas = arestas_entrada;
-                  no.no = nodo;
-                  v.push_back(no);
+                  v.push_back({nodo.hop_from, (int)indegree(nodo.hop_from)});
               }
             }
             std::sort(v.begin(), v.end(), [](const nos& a, const nos& b){
               return a.arestas_entradas > b.arestas_entradas;
             });
-            return v.empty() ? 0 : v.front().arestas_entradas;
+
+            std::cout << "Top 5 Roteadores Críticos (maior grau de entrada):\n";
+            size_t limite = std::min(v.size(), (size_t)5);
+            for(size_t i = 0; i < limite; ++i){
+              std::cout << i + 1 << ". " << v[i].ip << " - indegree: " << v[i].arestas_entradas << "\n";
+            }
           }
           
           void export2dot(const std::string& filename){
