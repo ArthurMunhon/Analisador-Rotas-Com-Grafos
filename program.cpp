@@ -15,8 +15,6 @@ int main(int argc, char *argv[]){
     ifstream arquivo_entrada;
     string entrada;
     graph::digraph g;
-    int arestas = 0;
-    int vertices = 0;
     for (int i = 1; i < argc; ++i) {
         entrada += argv[i];
     }
@@ -44,18 +42,15 @@ int main(int argc, char *argv[]){
              
             if(hop_to != "*"){
                 if(hop_from != " " || hop_to != " "){
-                    g.insert_nodo(prb_id, hop,probe_src, dst_addr, hop_from, rtt);
-                    vertices++;
-            
+                    g.insert_nodo(prb_id, probe_src, dst_addr, hop_from, rtt);
                     g.insert_link(hop_from, hop_to);
-                    arestas++;
                     
-                
                 }
             }
         }
    }  
-    cout << "Carregamento inicial concluído! Foram inseridos " << vertices << " vertices e " << arestas << " arestas" << endl;
+    cout << "Carregamento inicial concluído! Foram inseridos " << endl;
+    cout << "Vertices unícos (IPs): " << g.total_vertices() << " | " << "Arestas: " << g.total_arestas() << endl;
     arquivo_entrada.close();
     cout << "======MENU======" << endl <<
     "Digite a opção desejada:" << endl << 
@@ -77,13 +72,15 @@ int main(int argc, char *argv[]){
         int escolha;
         cin >> escolha;
         if(escolha == 1){
-            g.draWhithScreen(argv[1]);
+            g.draWhithScreen();
         }
         else if(escolha == 2){
             g.drawPNG(argv[1]);
+            cout << "Arquivo " << argv[1] << ".png gerado com sucesso";
         }
         else if(escolha == 3){
             g.drawPDF(argv[1]);
+            cout << "Arquivo " << argv[1] << ".pdf gerado com sucesso";
         }
         else if(escolha ==4){
             g.exibe_grafo();
@@ -113,12 +110,14 @@ int main(int argc, char *argv[]){
             g.drawMenor_caminhoScreen(path,argv[1]);
         }else if(imagem == 2){
             g.drawMenor_caminhoPNG(path,argv[1]);
+            cout << "Arquivo " << argv[1] << ".png gerado com sucesso";
         }else if(imagem == 3){
             g.drawMenor_caminhoPDF(path,argv[1]);
+            cout << "Arquivo " << argv[1] << ".pdf gerado com sucesso";
         }
     }
     else if(usuario == 3){
-        cout << g.diametro() << endl;
+        cout << "O grafo possui "<< g.diametro() << " de diametro" << endl;
     }
     else if(usuario == 4){
         g.top_criticos();

@@ -18,8 +18,6 @@ namespace graph{
         private:
           // nodos do grafo - VERTÍCES
           struct node{
-            //std::string prb_id;
-            //std::string hop;
             std::string probe_src;
             std::string dst_addr;
             std::string rtt;
@@ -34,8 +32,7 @@ namespace graph{
         public:
          //Insere um novo nó no grafo com o rótulo s
           void insert_nodo(const std::string& prb_id,
-                            const std::string& hop, 
-                            const std::string& probe_src, 
+                            const std::string& probe_src,
                             const std::string& dst_addr,
                             const std::string& hop_from,
                             const std::string& rtt){
@@ -110,6 +107,26 @@ namespace graph{
             return qnt;
           }
 
+          //numero total de vertices (IPs) unicos no grafo
+          size_t total_vertices(){
+            size_t total = 0;
+            for(auto& [prb_id, digrafo] : map){
+              total += digrafo.nodes.size();
+            }
+            return total;
+          }
+
+          //numero total de arestas (links) unicas no grafo
+          size_t total_arestas(){
+            size_t total = 0;
+            for(auto& [prb_id, digrafo] : map){
+              for(auto& [hop, node] : digrafo.nodes){
+                total += node.links.size();
+              }
+            }
+            return total;
+          }
+
           void top_criticos(){
             struct nos
             {
@@ -156,7 +173,7 @@ namespace graph{
           }
           
           
-          void draWhithScreen(const std::string& input){
+          void draWhithScreen(){
             export2dot("graphED2.dot");
             std::system("dot -Tx11 graphED2.dot");
           }
@@ -197,7 +214,7 @@ namespace graph{
                 for(auto&[prb_id, digrafo] : map){
                   for(auto& [hop, node] : digrafo.nodes){
                     if(node.hop_from == s){
-                      dot << "\t\"" << node.hop_from << "\" [style=filled, fillcolor=\"lightblue\"];\n";
+                      dot << "\t\"" << node.hop_from << "\" [style=filled, fillcolor=\"lightgreen\"];\n";
                     }
                   }
                 }

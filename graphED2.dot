@@ -1,8 +1,4 @@
 digraph {
-	"82.66.191.65" [style=filled, fillcolor="lightblue"];
-	"192.168.3.1" [style=filled, fillcolor="lightblue"];
-	"194.149.162.248" [style=filled, fillcolor="lightblue"];
-	"194.149.162.250" [style=filled, fillcolor="lightblue"];
 "51.10.34.9" -> "51.10.8.138";
 "213.140.38.249" -> "94.142.99.160";
 "62.157.250.199" -> "213.140.38.249";
